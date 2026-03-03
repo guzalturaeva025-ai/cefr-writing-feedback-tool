@@ -7,24 +7,22 @@ st.set_page_config(page_title="CEFR Writing Feedback Tool", layout="centered")
 st.title("CEFR Writing Feedback Tool")
 st.write("Upload or paste your writing to receive structured CEFR-based feedback.")
 
+# --- SECURE API KEY ---
+api_key = st.secrets["OPENAI_API_KEY"]
+client = OpenAI(api_key=api_key)
+
 # --- INPUTS ---
 level = st.selectbox("Select CEFR Level", ["A2", "B1", "B2", "C1"])
 genre = st.selectbox("Select Genre", ["Essay", "Email", "Report", "Narrative"])
-
 text = st.text_area("Paste student writing here:", height=300)
-
-api_key = st.text_input("Enter your OpenAI API Key", type="password")
 
 # --- FEEDBACK LOGIC ---
 if st.button("Generate Feedback"):
 
-    if not api_key:
-        st.error("Please enter your OpenAI API key.")
-    elif not text:
+    if not text:
         st.error("Please paste student writing.")
-    else:
-        client = OpenAI(api_key=api_key)
 
+    else:
         prompt = f"""
 You are a CEFR writing examiner.
 
@@ -53,5 +51,6 @@ Student Text:
         )
 
         feedback = response.choices[0].message.content
+
         st.subheader("Feedback Report")
         st.write(feedback)
