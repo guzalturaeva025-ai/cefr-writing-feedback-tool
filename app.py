@@ -1,5 +1,6 @@
 import streamlit as st
 from groq import Groq
+import requests
 
 # --- CONFIG ---
 st.set_page_config(page_title="CEFR Writing Feedback Tool", layout="centered")
@@ -10,6 +11,9 @@ st.write("Upload or paste your writing to receive structured CEFR-based feedback
 # --- SECURE API KEY ---
 api_key = st.secrets["GROQ_API_KEY"]
 client = Groq(api_key=api_key)
+
+# --- GOOGLE SHEETS WEB APP URL ---
+url = "https://script.google.com/macros/s/AKfycbxB7jZe7yAK-isIY_GdUnAt6RmnvNFotJqoH_KBWyIv1jkRnnrq42268wqDKnSB0HI4cw/exec"
 
 # --- INPUTS ---
 level = st.selectbox("Select CEFR Level", ["A2", "B1", "B2", "C1"])
@@ -51,5 +55,20 @@ Student Text:
 
         feedback = response.choices[0].message.content
 
+        # --- SEND DATA TO GOOGLE SHEETS ---
+        data = {
+            "level": level,
+            "genre": genre,
+            "text": text,
+            "feedback": feedback
+        }
+
+        try:
+            requests.post(url, json=data)
+            st.success("Response saved to Google Sheets.")
+        except:
+            st.warning("Feedback generated but data could not be saved.")
+
+        # --- SHOW FEEDBACK ---
         st.subheader("Feedback Report")
         st.write(feedback)
