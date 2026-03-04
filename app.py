@@ -1,3 +1,4 @@
+st.info("This tool evaluates student writing using CEFR criteria and stores results in Google Sheets.")
 import streamlit as st
 from groq import Groq
 import requests
@@ -8,11 +9,16 @@ st.set_page_config(page_title="CEFR Writing Feedback Tool", layout="centered")
 st.title("CEFR Writing Feedback Tool")
 st.write("Upload or paste your writing to receive structured CEFR-based feedback.")
 
+# --- CHECK API KEY ---
+if "GROQ_API_KEY" not in st.secrets:
+    st.error("❌ GROQ_API_KEY is missing. Please add it in Streamlit Secrets.")
+    st.stop()
+
 # --- LOAD API KEY ---
 api_key = st.secrets["GROQ_API_KEY"]
 client = Groq(api_key=api_key)
 
-# --- GOOGLE SHEETS WEB APP URL (IMPORTANT: /exec NOT /dev) ---
+# --- GOOGLE SHEETS WEB APP URL ---
 url = "https://script.google.com/macros/s/AKfycbyISau2fk4hkekRR5-PGqoucUmz_xGK6mSDfnbikkN2z6R9uHHUzSEDYDF-ixU7STLbfA/exec"
 
 # --- INPUTS ---
@@ -72,19 +78,17 @@ Student Text:
         }
 
         try:
-            r = requests.post(url, data=data)
+            r = requests.post(url, data=data, timeout=10)
 
             if r.status_code == 200:
                 st.success("✅ Saved to Google Sheets")
             else:
-                st.warning("Feedback generated but saving failed.")
+                st.warning(f"Feedback generated but saving failed. Status code: {r.status_code}")
 
-        except Exception as e:
+        except requests.exceptions.RequestException as e:
             st.warning("Could not send data to Google Sheets.")
             st.write(e)
 
         # --- SHOW FEEDBACK ---
         st.subheader("Feedback Report")
         st.write(feedback)
-
-
