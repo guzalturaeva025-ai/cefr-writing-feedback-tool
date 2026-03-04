@@ -13,8 +13,7 @@ api_key = st.secrets["GROQ_API_KEY"]
 client = Groq(api_key=api_key)
 
 # --- GOOGLE SHEETS WEB APP URL ---
-url = "https://script.google.com/macros/s/AKfycbxB7jZe7yAK-isIY_GdUnAt6RmnvNFotJqoH_KBWyIv1jkRnnrq42268wqDKnSB0HI4cw/exec"
-
+url = "https://script.google.com/macros/s/AKfycbwAJpnlax9dtHx8Z3tGSAH0gLTLUWb9p2SRgBdSER3SrBWFJGTs2eeS5GAf1LXab8AG/exec"
 # --- INPUTS ---
 level = st.selectbox("Select CEFR Level", ["A2", "B1", "B2", "C1"])
 genre = st.selectbox("Select Genre", ["Essay", "Email", "Report", "Narrative"])
@@ -72,3 +71,4 @@ Student Text:
         # --- SHOW FEEDBACK ---
         st.subheader("Feedback Report")
         st.write(feedback)
+
