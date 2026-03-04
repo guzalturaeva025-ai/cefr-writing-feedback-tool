@@ -15,6 +15,7 @@ st.write("Upload or paste your writing to receive structured CEFR-based feedback
 api_key = st.secrets["GROQ_API_KEY"]
 client = Groq(api_key=api_key)
 
+# --- GOOGLE SHEETS CONNECTION ---
 scope = [
     "https://www.googleapis.com/auth/spreadsheets",
     "https://www.googleapis.com/auth/drive"
@@ -69,18 +70,19 @@ Student Text:
 
         feedback = response.choices[0].message.content
 
-        # Save to Google Sheet
+        # --- Save data to Google Sheets safely ---
         try:
-    sheet.append_row([
-        datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        level,
-        genre,
-        text,
-        feedback
-    ])
-except Exception as e:
-    st.warning("Data could not be saved to Google Sheets, but feedback was generated.")
-        # Show feedback in app
+            sheet.append_row([
+                datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                level,
+                genre,
+                text,
+                feedback
+            ])
+            st.success("Response saved for research.")
+        except Exception:
+            st.warning("Feedback generated, but data could not be saved to Google Sheets.")
+
+        # --- Show feedback ---
         st.subheader("Feedback Report")
         st.write(feedback)
-
