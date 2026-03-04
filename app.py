@@ -14,10 +14,10 @@ client = Groq(api_key=api_key)
 
 # --- GOOGLE SHEETS WEB APP URL ---
 url = "https://script.google.com/macros/s/AKfycbwAJpnlax9dtHx8Z3tGSAH0gLTLUWb9p2SRgBdSER3SrBWFJGTs2eeS5GAf1LXab8AG/exec"
+
 # --- INPUTS ---
 level = st.selectbox("Select CEFR Level", ["A2", "B1", "B2", "C1"])
 genre = st.selectbox("Select Genre", ["Essay", "Email", "Report", "Narrative"])
-
 text = st.text_area("Paste student writing here:", height=300)
 
 # --- FEEDBACK LOGIC ---
@@ -63,12 +63,12 @@ Student Text:
         }
 
         try:
-            requests.post(url, json=data)
+            r = requests.post(url, data=data)  # 🔥 FIX: use data= instead of json=
             st.success("Response saved to Google Sheets.")
-        except:
+        except Exception as e:
             st.warning("Feedback generated but data could not be saved.")
+            st.write(e)
 
         # --- SHOW FEEDBACK ---
         st.subheader("Feedback Report")
         st.write(feedback)
-
