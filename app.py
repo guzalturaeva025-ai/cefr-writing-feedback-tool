@@ -70,14 +70,17 @@ Student Text:
         feedback = response.choices[0].message.content
 
         # Save to Google Sheet
-        sheet.append_row([
-            datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            level,
-            genre,
-            text,
-            feedback
-        ])
-
+        try:
+    sheet.append_row([
+        datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        level,
+        genre,
+        text,
+        feedback
+    ])
+except Exception as e:
+    st.warning("Data could not be saved to Google Sheets, but feedback was generated.")
         # Show feedback in app
         st.subheader("Feedback Report")
         st.write(feedback)
+
