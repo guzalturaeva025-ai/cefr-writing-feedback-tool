@@ -1,4 +1,3 @@
 streamlit
 groq
-gspread
-google-auth
+requests
