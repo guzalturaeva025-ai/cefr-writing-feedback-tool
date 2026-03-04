@@ -1,6 +1,10 @@
 import streamlit as st
 from groq import Groq
 
+import gspread
+from google.oauth2.service_account import Credentials
+from datetime import datetime
+
 # --- CONFIG ---
 st.set_page_config(page_title="CEFR Writing Feedback Tool", layout="centered")
 
@@ -10,6 +14,20 @@ st.write("Upload or paste your writing to receive structured CEFR-based feedback
 # --- SECURE API KEY ---
 api_key = st.secrets["GROQ_API_KEY"]
 client = Groq(api_key=api_key)
+
+scope = [
+    "https://www.googleapis.com/auth/spreadsheets",
+    "https://www.googleapis.com/auth/drive"
+]
+
+credentials = Credentials.from_service_account_info(
+    st.secrets["gcp_service_account"],
+    scopes=scope
+)
+
+gc = gspread.authorize(credentials)
+
+sheet = gc.open_by_key("1vOmCrxBQQGVrc0FKZkn8vCe5PjSJkxmbAOiIDlbDliY").sheet1
 
 # --- INPUTS ---
 level = st.selectbox("Select CEFR Level", ["A2", "B1", "B2", "C1"])
@@ -51,5 +69,14 @@ Student Text:
 
         feedback = response.choices[0].message.content
 
-        st.subheader("Feedback Report")
-        st.write(feedback)
+sheet.append_row([
+    datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+    level,
+    genre,
+    text,
+    feedback
+])
+
+st.subheader("Feedback Report")
+st.write(feedback)
+
