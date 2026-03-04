@@ -69,14 +69,15 @@ Student Text:
 
         feedback = response.choices[0].message.content
 
-sheet.append_row([
-    datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-    level,
-    genre,
-    text,
-    feedback
-])
+        # Save to Google Sheet
+        sheet.append_row([
+            datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            level,
+            genre,
+            text,
+            feedback
+        ])
 
-st.subheader("Feedback Report")
-st.write(feedback)
-
+        # Show feedback in app
+        st.subheader("Feedback Report")
+        st.write(feedback)
