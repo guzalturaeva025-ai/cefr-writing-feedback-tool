@@ -23,13 +23,42 @@ client = Groq(api_key=api_key)
 # --- GOOGLE SHEETS WEB APP URL ---
 url = "https://script.google.com/macros/s/AKfycbyISau2fk4hkekRR5-PGqoucUmz_xGK6mSDfnbikkN2z6R9uHHUzSEDYDF-ixU7STLbfA/exec"
 
-# --- INPUTS ---
-level = st.selectbox("Select CEFR Level", ["A2", "B1", "B2", "C1"])
-genre = st.selectbox("Select Genre", ["Essay", "Email", "Report", "Narrative"])
+# --- STUDENT INPUTS ---
+student_name = st.text_input("Student Name")
+
+level = st.selectbox(
+    "Select CEFR Level",
+    ["A1", "A2", "B1", "B2", "C1", "C2"]
+)
+
+genre = st.selectbox(
+    "Select Genre",
+    [
+        "Essay",
+        "Email",
+        "Formal Letter",
+        "Informal Letter",
+        "Report",
+        "Article",
+        "Review",
+        "Narrative",
+        "Opinion Essay",
+        "For and Against Essay",
+        "Story",
+        "Blog Post",
+        "Complaint Letter",
+        "Application Letter"
+    ]
+)
+
 text = st.text_area("Paste student writing here:", height=300)
 
 # --- GENERATE FEEDBACK ---
 if st.button("Generate Feedback"):
+
+    if student_name.strip() == "":
+        st.error("Please enter the student name.")
+        st.stop()
 
     if text.strip() == "":
         st.error("Please paste student writing.")
@@ -43,7 +72,8 @@ You are a CEFR writing examiner.
 Evaluate the following student writing at {level} level for a {genre}.
 
 Provide:
-1. Band score (4-1) for:
+
+1. Band score (4–1) for:
 - Task Achievement
 - Coherence & Organization
 - Vocabulary Range & Control
@@ -51,7 +81,10 @@ Provide:
 - Communicative Effectiveness
 
 2. Short justification for each criterion.
+
 3. Clear improvement suggestions.
+
+Student Name: {student_name}
 
 Student Text:
 {text}
@@ -73,6 +106,7 @@ Student Text:
 
         # --- SEND DATA TO GOOGLE SHEETS ---
         data = {
+            "name": student_name,
             "level": level,
             "genre": genre,
             "text": text,
@@ -92,5 +126,6 @@ Student Text:
             st.write(e)
 
         # --- SHOW FEEDBACK ---
+        st.divider()
         st.subheader("Feedback Report")
         st.write(feedback)
