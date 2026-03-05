@@ -1,35 +1,35 @@
 import streamlit as st
 from groq import Groq
 import requests
-import pandas as pd
 
+# --- PAGE CONFIG ---
 st.set_page_config(page_title="CEFR Writing Feedback Tool", layout="centered")
 
-st.title("CEFR Writing Feedback Tool")
+st.info("This tool evaluates student writing using CEFR criteria and stores results in Google Sheets.")
 
-st.info("AI tool for evaluating student writing using CEFR criteria.")
+st.title("CEFR Writing Feedback Tool")
+st.write("Upload or paste your writing to receive structured CEFR-based feedback.")
 
 # --- CHECK API KEY ---
 if "GROQ_API_KEY" not in st.secrets:
-    st.error("Missing GROQ_API_KEY in Streamlit secrets.")
+    st.error("❌ GROQ_API_KEY is missing. Please add it in Streamlit Secrets.")
     st.stop()
 
+# --- LOAD API KEY ---
 api_key = st.secrets["GROQ_API_KEY"]
 client = Groq(api_key=api_key)
 
-# --- GOOGLE SCRIPT URL ---
+# --- GOOGLE SHEETS WEB APP URL ---
 url = "https://script.google.com/macros/s/AKfycbyISau2fk4hkekRR5-PGqoucUmz_xGK6mSDfnbikkN2z6R9uHHUzSEDYDF-ixU7STLbfA/exec"
 
-# --- STUDENT INPUTS ---
+# --- STUDENT INPUT ---
 student_name = st.text_input("Student Name")
 
-level = st.selectbox(
-    "CEFR Level",
-    ["A1", "A2", "B1", "B2", "C1", "C2"]
-)
+# --- OTHER INPUTS ---
+level = st.selectbox("Select CEFR Level", ["A1","A2","B1","B2","C1","C2"])
 
 genre = st.selectbox(
-    "Genre",
+    "Select Genre",
     [
         "Essay",
         "Opinion Essay",
@@ -42,13 +42,11 @@ genre = st.selectbox(
         "Review",
         "Narrative",
         "Story",
-        "Blog Post",
-        "Complaint Letter",
-        "Application Letter"
+        "Blog Post"
     ]
 )
 
-text = st.text_area("Student Writing", height=250)
+text = st.text_area("Paste student writing here:", height=300)
 
 # --- GENERATE FEEDBACK ---
 if st.button("Generate Feedback"):
@@ -61,7 +59,7 @@ if st.button("Generate Feedback"):
         st.error("Please paste student writing.")
         st.stop()
 
-    with st.spinner("Analyzing writing..."):
+    with st.spinner("Generating feedback..."):
 
         prompt = f"""
 You are a CEFR writing examiner.
@@ -69,7 +67,6 @@ You are a CEFR writing examiner.
 Evaluate the following student writing at {level} level for a {genre}.
 
 Provide:
-
 1. Band score (4–1) for:
 - Task Achievement
 - Coherence & Organization
@@ -95,7 +92,7 @@ Student Text:
 
         feedback = response.choices[0].message.content
 
-        # --- SAVE TO GOOGLE SHEETS ---
+        # --- SEND DATA TO GOOGLE SHEETS ---
         data = {
             "name": student_name,
             "level": level,
@@ -104,34 +101,17 @@ Student Text:
             "feedback": feedback
         }
 
-        requests.post(url, data=data)
+        try:
+            r = requests.post(url, data=data)
 
-        st.success("Saved to Google Sheets")
+            if r.status_code == 200:
+                st.success("✅ Saved to Google Sheets")
+            else:
+                st.warning("Feedback generated but saving failed.")
 
-        st.subheader("Feedback")
+        except:
+            st.warning("Could not send data to Google Sheets.")
+
+        # --- SHOW FEEDBACK ---
+        st.subheader("Feedback Report")
         st.write(feedback)
-
-# --- TEACHER DASHBOARD ---
-st.divider()
-st.header("Teacher Dashboard")
-
-try:
-    response = requests.get(url)
-    df = pd.DataFrame(response.json())
-
-    if not df.empty:
-
-        st.subheader("All Submissions")
-        st.dataframe(df)
-
-        col1, col2, col3 = st.columns(3)
-
-        col1.metric("Total Submissions", len(df))
-        col2.metric("Unique Students", df["Student Name"].nunique())
-        col3.metric("Most Common Level", df["CEFR Level"].mode()[0])
-
-    else:
-        st.info("No submissions yet.")
-
-except:
-    st.warning("Could not load dashboard data yet.")
