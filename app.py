@@ -1,40 +1,39 @@
 import streamlit as st
 from groq import Groq
 import requests
+import pandas as pd
 
-# --- PAGE CONFIG ---
 st.set_page_config(page_title="CEFR Writing Feedback Tool", layout="centered")
 
-# --- APP INFO ---
-st.info("This tool evaluates student writing using CEFR criteria and stores results in Google Sheets.")
-
 st.title("CEFR Writing Feedback Tool")
-st.write("Upload or paste your writing to receive structured CEFR-based feedback.")
+
+st.info("AI tool for evaluating student writing using CEFR criteria.")
 
 # --- CHECK API KEY ---
 if "GROQ_API_KEY" not in st.secrets:
-    st.error("❌ GROQ_API_KEY is missing. Please add it in Streamlit Secrets.")
+    st.error("Missing GROQ_API_KEY in Streamlit secrets.")
     st.stop()
 
-# --- LOAD API KEY ---
 api_key = st.secrets["GROQ_API_KEY"]
 client = Groq(api_key=api_key)
 
-# --- GOOGLE SHEETS WEB APP URL ---
+# --- GOOGLE SCRIPT URL ---
 url = "https://script.google.com/macros/s/AKfycbyISau2fk4hkekRR5-PGqoucUmz_xGK6mSDfnbikkN2z6R9uHHUzSEDYDF-ixU7STLbfA/exec"
 
 # --- STUDENT INPUTS ---
 student_name = st.text_input("Student Name")
 
 level = st.selectbox(
-    "Select CEFR Level",
+    "CEFR Level",
     ["A1", "A2", "B1", "B2", "C1", "C2"]
 )
 
 genre = st.selectbox(
-    "Select Genre",
+    "Genre",
     [
         "Essay",
+        "Opinion Essay",
+        "For and Against Essay",
         "Email",
         "Formal Letter",
         "Informal Letter",
@@ -42,8 +41,6 @@ genre = st.selectbox(
         "Article",
         "Review",
         "Narrative",
-        "Opinion Essay",
-        "For and Against Essay",
         "Story",
         "Blog Post",
         "Complaint Letter",
@@ -51,20 +48,20 @@ genre = st.selectbox(
     ]
 )
 
-text = st.text_area("Paste student writing here:", height=300)
+text = st.text_area("Student Writing", height=250)
 
 # --- GENERATE FEEDBACK ---
 if st.button("Generate Feedback"):
 
     if student_name.strip() == "":
-        st.error("Please enter the student name.")
+        st.error("Please enter student name.")
         st.stop()
 
     if text.strip() == "":
         st.error("Please paste student writing.")
         st.stop()
 
-    with st.spinner("Generating feedback..."):
+    with st.spinner("Analyzing writing..."):
 
         prompt = f"""
 You are a CEFR writing examiner.
@@ -90,21 +87,15 @@ Student Text:
 {text}
 """
 
-        try:
-            response = client.chat.completions.create(
-                model="llama-3.1-8b-instant",
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.7,
-            )
+        response = client.chat.completions.create(
+            model="llama-3.1-8b-instant",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.7,
+        )
 
-            feedback = response.choices[0].message.content
+        feedback = response.choices[0].message.content
 
-        except Exception as e:
-            st.error("Error generating feedback.")
-            st.write(e)
-            st.stop()
-
-        # --- SEND DATA TO GOOGLE SHEETS ---
+        # --- SAVE TO GOOGLE SHEETS ---
         data = {
             "name": student_name,
             "level": level,
@@ -113,19 +104,34 @@ Student Text:
             "feedback": feedback
         }
 
-        try:
-            r = requests.post(url, data=data, timeout=10)
+        requests.post(url, data=data)
 
-            if r.status_code == 200:
-                st.success("✅ Saved to Google Sheets")
-            else:
-                st.warning(f"Feedback generated but saving failed. Status code: {r.status_code}")
+        st.success("Saved to Google Sheets")
 
-        except requests.exceptions.RequestException as e:
-            st.warning("Could not send data to Google Sheets.")
-            st.write(e)
-
-        # --- SHOW FEEDBACK ---
-        st.divider()
-        st.subheader("Feedback Report")
+        st.subheader("Feedback")
         st.write(feedback)
+
+# --- TEACHER DASHBOARD ---
+st.divider()
+st.header("Teacher Dashboard")
+
+try:
+    response = requests.get(url)
+    df = pd.DataFrame(response.json())
+
+    if not df.empty:
+
+        st.subheader("All Submissions")
+        st.dataframe(df)
+
+        col1, col2, col3 = st.columns(3)
+
+        col1.metric("Total Submissions", len(df))
+        col2.metric("Unique Students", df["Student Name"].nunique())
+        col3.metric("Most Common Level", df["CEFR Level"].mode()[0])
+
+    else:
+        st.info("No submissions yet.")
+
+except:
+    st.warning("Could not load dashboard data yet.")
