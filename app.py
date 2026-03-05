@@ -1,10 +1,12 @@
-st.info("This tool evaluates student writing using CEFR criteria and stores results in Google Sheets.")
 import streamlit as st
 from groq import Groq
 import requests
 
 # --- PAGE CONFIG ---
 st.set_page_config(page_title="CEFR Writing Feedback Tool", layout="centered")
+
+# --- APP INFO ---
+st.info("This tool evaluates student writing using CEFR criteria and stores results in Google Sheets.")
 
 st.title("CEFR Writing Feedback Tool")
 st.write("Upload or paste your writing to receive structured CEFR-based feedback.")
