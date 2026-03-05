@@ -8,26 +8,30 @@ st.set_page_config(page_title="CEFR Writing Feedback Tool", layout="centered")
 st.info("This tool evaluates student writing using CEFR criteria and stores results in Google Sheets.")
 
 st.title("CEFR Writing Feedback Tool")
-st.write("Upload or paste your writing to receive structured CEFR-based feedback.")
+st.write("Paste student writing to receive CEFR-based feedback.")
 
 # --- CHECK API KEY ---
 if "GROQ_API_KEY" not in st.secrets:
     st.error("❌ GROQ_API_KEY is missing. Please add it in Streamlit Secrets.")
     st.stop()
 
-# --- LOAD API KEY ---
+# --- LOAD GROQ CLIENT ---
 api_key = st.secrets["GROQ_API_KEY"]
 client = Groq(api_key=api_key)
 
-# --- GOOGLE SHEETS WEB APP URL ---
+# --- GOOGLE SHEETS SCRIPT URL ---
 url = "https://script.google.com/macros/s/AKfycbyISau2fk4hkekRR5-PGqoucUmz_xGK6mSDfnbikkN2z6R9uHHUzSEDYDF-ixU7STLbfA/exec"
 
-# --- STUDENT INPUT ---
+# --- STUDENT NAME ---
 student_name = st.text_input("Student Name")
 
-# --- OTHER INPUTS ---
-level = st.selectbox("Select CEFR Level", ["A1","A2","B1","B2","C1","C2"])
+# --- CEFR LEVEL ---
+level = st.selectbox(
+    "Select CEFR Level",
+    ["A1", "A2", "B1", "B2", "C1", "C2"]
+)
 
+# --- GENRE ---
 genre = st.selectbox(
     "Select Genre",
     [
@@ -46,6 +50,7 @@ genre = st.selectbox(
     ]
 )
 
+# --- STUDENT TEXT ---
 text = st.text_area("Paste student writing here:", height=300)
 
 # --- GENERATE FEEDBACK ---
@@ -67,6 +72,7 @@ You are a CEFR writing examiner.
 Evaluate the following student writing at {level} level for a {genre}.
 
 Provide:
+
 1. Band score (4–1) for:
 - Task Achievement
 - Coherence & Organization
@@ -84,15 +90,22 @@ Student Text:
 {text}
 """
 
-        response = client.chat.completions.create(
-            model="llama-3.1-8b-instant",
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.7,
-        )
+        try:
 
-        feedback = response.choices[0].message.content
+            response = client.chat.completions.create(
+                model="llama-3.1-8b-instant",
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.7,
+            )
 
-        # --- SEND DATA TO GOOGLE SHEETS ---
+            feedback = response.choices[0].message.content
+
+        except Exception as e:
+            st.error("Error generating feedback.")
+            st.write(e)
+            st.stop()
+
+        # --- DATA TO GOOGLE SHEETS ---
         data = {
             "name": student_name,
             "level": level,
@@ -102,6 +115,7 @@ Student Text:
         }
 
         try:
+
             r = requests.post(url, data=data)
 
             if r.status_code == 200:
