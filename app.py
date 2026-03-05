@@ -11,7 +11,7 @@ api_key = st.secrets["GROQ_API_KEY"]
 client = Groq(api_key=api_key)
 
 # --- GOOGLE SCRIPT URL ---
-url = "PASTE_YOUR_EXEC_URL_HERE"
+url = "https://script.google.com/macros/s/AKfycbyyCLuWRVeSDMOwyj6PFVJH1Zry3PKIoJxDQQVwsCNQ3PVNixR_jrtT1jUdpVMrOj2wLQ/exec"
 
 # --- INPUTS ---
 student_name = st.text_input("Student Name")
@@ -107,3 +107,4 @@ Text:
     # --- DISPLAY ---
     st.subheader("Feedback")
     st.write(feedback)
+
