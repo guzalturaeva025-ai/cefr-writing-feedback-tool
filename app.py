@@ -60,19 +60,28 @@ if st.button("Generate Feedback"):
     prompt = f"""
 You are a CEFR writing examiner.
 
-Evaluate the following writing at {level} level for a {genre}.
+Evaluate the student's writing at {level} level for a {genre}.
 
-Provide scores (1–4) for:
+IMPORTANT RULES:
+- Do NOT rewrite the student's essay.
+- Do NOT continue the essay.
+- Do NOT correct the essay line by line.
+- Only evaluate and give feedback.
 
+Provide:
+
+1. Band score (1–4) for:
 Task Achievement
 Coherence & Organization
 Vocabulary Range
-Grammar Accuracy
+Grammatical Range & Accuracy
 Communicative Effectiveness
 
-Then give improvement suggestions.
+2. Brief explanation for each score.
 
-Text:
+3. General improvement suggestions (do not rewrite the essay).
+
+Student Text:
 {text}
 """
 
@@ -107,4 +116,5 @@ Text:
     # --- DISPLAY ---
     st.subheader("Feedback")
     st.write(feedback)
+
 
