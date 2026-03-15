@@ -217,7 +217,7 @@ Text:
     }
 
     try:
-        r = requests.post(url, data=data)
+        r = requests.post(url, json=data)
 
         if r.status_code == 200:
             st.success("Saved to Google Sheets")
