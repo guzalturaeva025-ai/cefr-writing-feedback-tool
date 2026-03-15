@@ -1,3 +1,4 @@
+```python
 import streamlit as st
 from groq import Groq
 import requests
@@ -56,7 +57,7 @@ if st.button("Generate Feedback"):
     # --- WORD COUNT ---
     wordcount = len(text.split())
 
-    # --- PROMPT ---
+    # --- CEFR FEEDBACK PROMPT ---
     prompt = f"""
 You are a CEFR writing examiner.
 
@@ -85,7 +86,7 @@ Student Text:
 {text}
 """
 
-    # --- AI RESPONSE ---
+    # --- AI RESPONSE (FEEDBACK) ---
     response = client.chat.completions.create(
         model="llama-3.1-8b-instant",
         messages=[{"role":"user","content":prompt}],
@@ -94,6 +95,39 @@ Student Text:
 
     feedback = response.choices[0].message.content
 
+
+    # --- ERROR CORRECTION PROMPT ---
+    error_prompt = f"""
+You are an English teacher.
+
+Analyze the student's text and identify grammar, vocabulary, and spelling mistakes.
+
+Show mistakes in this format:
+
+incorrect → correction (short explanation)
+
+Example:
+go → went (past tense)
+
+Rules:
+- Do NOT rewrite the full essay
+- Do NOT continue the essay
+- Only list the mistakes and corrections
+- Be concise
+
+Student Text:
+{text}
+"""
+
+    error_response = client.chat.completions.create(
+        model="llama-3.1-8b-instant",
+        messages=[{"role":"user","content":error_prompt}],
+        temperature=0.2,
+    )
+
+    error_feedback = error_response.choices[0].message.content
+
+
     # --- DATA TO GOOGLE SHEETS ---
     data = {
         "name": student_name,
@@ -101,7 +135,8 @@ Student Text:
         "genre": genre,
         "wordcount": wordcount,
         "text": text,
-        "feedback": feedback
+        "feedback": feedback,
+        "corrections": error_feedback
     }
 
     try:
@@ -113,8 +148,10 @@ Student Text:
     except:
         st.warning("Could not save to Google Sheets")
 
-    # --- DISPLAY ---
-    st.subheader("Feedback")
+    # --- DISPLAY RESULTS ---
+    st.subheader("CEFR Feedback")
     st.write(feedback)
 
-
+    st.subheader("Error Correction")
+    st.markdown(error_feedback)
+```
