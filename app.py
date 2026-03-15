@@ -13,7 +13,7 @@ api_key = st.secrets["GROQ_API_KEY"]
 client = Groq(api_key=api_key)
 
 # --- GOOGLE SCRIPT URL ---
-url = "https://script.google.com/macros/s/AKfycbyyCLuWRVeSDMOwyj6PFVJH1Zry3PKIoJxDQQVwsCNQ3PVNixR_jrtT1jUdpVMrOj2wLQ/exec"
+url = "https://script.google.com/macros/s/AKfycbxi-8EH2eNX8EpLuWqzd73S0exRS9iufOnfiana4U-CeGMhA5Wcafo09reCEK4f724G/exec"
 
 # --- SIMPLE CEFR VOCAB LISTS (research demo) ---
 A1_words = {"go","come","make","take","see","know","think","want","like","play"}
