@@ -149,8 +149,7 @@ Student Text:
 
     # --- DISPLAY RESULTS ---
     st.subheader("CEFR Feedback")
-    st.write(feedback)
+st.write(feedback)
 
-    st.subheader("Error Correction")
-    st.markdown(error_feedback)
-```
+st.subheader("Error Correction")
+st.write(error_feedback)
