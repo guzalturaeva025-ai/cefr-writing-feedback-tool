@@ -1,3 +1,4 @@
+```python
 import streamlit as st
 from groq import Groq
 import requests
@@ -45,11 +46,11 @@ text = st.text_area("Student Writing", height=300)
 if st.button("Generate Feedback"):
 
     # --- VALIDATION ---
-    if not student_name or student_name.strip() == "":
+    if not student_name.strip():
         st.error("Student name was empty. Please enter the student's name.")
         st.stop()
 
-    if not text or text.strip() == "":
+    if not text.strip():
         st.error("Student writing is empty.")
         st.stop()
 
@@ -85,33 +86,23 @@ Student Text:
 {text}
 """
 
-    # --- AI RESPONSE (FEEDBACK) ---
+    # --- GENERATE FEEDBACK ---
     try:
-    response = client.chat.completions.create(
-        model="llama-3.1-8b-instant",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.7,
-    )
+        response = client.chat.completions.create(
+            model="llama-3.1-8b-instant",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.7,
+        )
 
-    feedback = response.choices[0].message.content
+        feedback = response.choices[0].message.content
 
-except Exception as e:
-    st.error("AI feedback generation failed.")
-    st.stop()
+    except Exception as e:
+        st.error("AI feedback generation failed.")
+        st.stop()
 
     # --- ERROR CORRECTION PROMPT ---
-  try:
-    error_response = client.chat.completions.create(
-        model="llama-3.1-8b-instant",
-        messages=[{"role":"user","content":error_prompt}],
-        temperature=0.2,
-    )
-
-    error_feedback = error_response.choices[0].message.content
-
-except Exception as e:
-    st.error("Error correction generation failed.")
-    st.stop()
+    error_prompt = f"""
+You are an English teacher.
 
 Analyze the student's text and identify grammar, vocabulary, and spelling mistakes.
 
@@ -132,14 +123,19 @@ Student Text:
 {text}
 """
 
-    error_response = client.chat.completions.create(
-        model="llama-3.1-8b-instant",
-        messages=[{"role":"user","content":error_prompt}],
-        temperature=0.2,
-    )
+    # --- GENERATE CORRECTIONS ---
+    try:
+        error_response = client.chat.completions.create(
+            model="llama-3.1-8b-instant",
+            messages=[{"role":"user","content":error_prompt}],
+            temperature=0.2,
+        )
 
-    error_feedback = error_response.choices[0].message.content
+        error_feedback = error_response.choices[0].message.content
 
+    except Exception as e:
+        st.error("Error correction generation failed.")
+        st.stop()
 
     # --- DATA TO GOOGLE SHEETS ---
     data = {
@@ -163,7 +159,8 @@ Student Text:
 
     # --- DISPLAY RESULTS ---
     st.subheader("CEFR Feedback")
-st.write(feedback)
+    st.write(feedback)
 
-st.subheader("Error Correction")
-st.write(error_feedback)
+    st.subheader("Error Correction")
+    st.write(error_feedback)
+```
