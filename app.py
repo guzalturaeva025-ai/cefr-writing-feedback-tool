@@ -2,6 +2,7 @@ import streamlit as st
 from groq import Groq
 import requests
 import statistics
+import re
 
 st.set_page_config(page_title="CEFR Writing Feedback Tool", layout="centered")
 
@@ -13,6 +14,14 @@ client = Groq(api_key=api_key)
 
 # --- GOOGLE SCRIPT URL ---
 url = "https://script.google.com/macros/s/AKfycbyyCLuWRVeSDMOwyj6PFVJH1Zry3PKIoJxDQQVwsCNQ3PVNixR_jrtT1jUdpVMrOj2wLQ/exec"
+
+# --- SIMPLE CEFR VOCAB LISTS (research demo) ---
+A1_words = {"go","come","make","take","see","know","think","want","like","play"}
+A2_words = {"decide","improve","travel","learn","study","teach","build"}
+B1_words = {"achieve","benefit","suggest","develop","support"}
+B2_words = {"significant","impact","approach","complex","maintain"}
+C1_words = {"comprehensive","substantial","evaluate","interpret"}
+C2_words = {"paradigm","intrinsic","nuanced"}
 
 # --- INPUTS ---
 student_name = st.text_input("Student Name")
@@ -66,6 +75,20 @@ if st.button("Generate Feedback"):
     unique_words = len(set(text.lower().split()))
     lexical_diversity = round(unique_words/wordcount,2) if wordcount > 0 else 0
 
+    # --- BURSTINESS & ORIGINALITY ---
+    burstiness = sentence_variation
+    repetition_ratio = 1 - lexical_diversity
+
+    # --- CEFR VOCAB ANALYSIS ---
+    words = re.findall(r'\b\w+\b', text.lower())
+
+    A1_count = sum(1 for w in words if w in A1_words)
+    A2_count = sum(1 for w in words if w in A2_words)
+    B1_count = sum(1 for w in words if w in B1_words)
+    B2_count = sum(1 for w in words if w in B2_words)
+    C1_count = sum(1 for w in words if w in C1_words)
+    C2_count = sum(1 for w in words if w in C2_words)
+
     # --- CEFR FEEDBACK PROMPT ---
     prompt = f"""
 You are a CEFR writing examiner.
@@ -113,20 +136,15 @@ Student Text:
     error_prompt = f"""
 You are an English teacher.
 
-Identify grammar, vocabulary and spelling mistakes.
+Mark mistakes directly in the text.
 
-Show corrections in this format:
-
-incorrect → correction (short explanation)
+Format:
+[word → correction]
 
 Example:
-go → went (past tense)
+I go [→ went] to school yesterday.
 
-Rules:
-- Do NOT rewrite the essay
-- Only list mistakes
-
-Student Text:
+Text:
 {text}
 """
 
@@ -184,6 +202,14 @@ Text:
         "avg_sentence_length": avg_sentence_length,
         "sentence_variation": sentence_variation,
         "lexical_diversity": lexical_diversity,
+        "burstiness": burstiness,
+        "repetition_ratio": repetition_ratio,
+        "A1_words": A1_count,
+        "A2_words": A2_count,
+        "B1_words": B1_count,
+        "B2_words": B2_count,
+        "C1_words": C1_count,
+        "C2_words": C2_count,
         "text": text,
         "feedback": feedback,
         "corrections": error_feedback,
@@ -208,10 +234,33 @@ Text:
     st.write(f"Sentence Variation (Burstiness): {sentence_variation}")
     st.write(f"Lexical Diversity: {lexical_diversity}")
 
+    st.subheader("CEFR Vocabulary Usage")
+
+    st.write(f"A1 words: {A1_count}")
+    st.write(f"A2 words: {A2_count}")
+    st.write(f"B1 words: {B1_count}")
+    st.write(f"B2 words: {B2_count}")
+    st.write(f"C1 words: {C1_count}")
+    st.write(f"C2 words: {C2_count}")
+
+    st.subheader("Originality Indicator")
+
+    if repetition_ratio > 0.6:
+        st.warning("High repetition detected. Possible copied or AI-generated patterns.")
+    else:
+        st.success("Writing shows reasonable lexical variation.")
+
+    st.subheader("Writing Pattern Analysis")
+
+    if burstiness < 3:
+        st.write("Low burstiness: writing may resemble AI style.")
+    else:
+        st.write("Higher burstiness: writing resembles human variability.")
+
     st.subheader("CEFR Feedback")
     st.markdown(feedback)
 
-    st.subheader("Error Correction")
+    st.subheader("Annotated Essay")
     st.markdown(error_feedback)
 
     st.subheader("AI Writing Likelihood")
