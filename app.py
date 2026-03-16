@@ -53,70 +53,39 @@ genre = st.selectbox(
 )
 
 # --- Student Writing ---
-import streamlit.components.v1 as components
-
-text = components.html(
-"""
-<textarea id="essay"
-placeholder="Write your essay here..."
-autocomplete="off"
-autocorrect="off"
-autocapitalize="off"
-spellcheck="false"
-style="
-width:100%;
-height:300px;
-padding:12px;
-font-size:16px;
-border:2px solid #ccc;
-border-radius:8px;
-resize:none;
-font-family:Arial;
-"></textarea>
-
-<script>
-
-const textarea = document.getElementById("essay");
-
-/* disable paste */
-textarea.addEventListener("paste", e => e.preventDefault());
-
-/* disable copy */
-textarea.addEventListener("copy", e => e.preventDefault());
-
-/* disable cut */
-textarea.addEventListener("cut", e => e.preventDefault());
-
-/* disable right click */
-textarea.addEventListener("contextmenu", e => e.preventDefault());
-
-/* disable tab suggestion acceptance */
-textarea.addEventListener("keydown", function(e){
-    if(e.key === "Tab"){
-        e.preventDefault();
-    }
-});
-
-</script>
-""",
-height=330,
+text = st.text_area(
+    "Write your essay here...",
+    height=330,
+    placeholder="Write your essay here..."
 )
-text = st.text_area("Write your essay here...", height=330)
 
 # --- BUTTON ---
 if st.button("Generate Feedback"):
 
     if text.strip() == "":
         st.warning("Please enter your essay before generating feedback.")
+        st.stop()
+
+    # --- WORD COUNT ---
+    wordcount = len(text.split())
+    st.write("Word count:", wordcount)
+
+    # --- BASIC METRICS ---
+    sentences = text.split(".")
+    sentence_lengths = [len(s.split()) for s in sentences if s.strip()]
+
+    if sentence_lengths:
+        avg_sentence_length = round(sum(sentence_lengths) / len(sentence_lengths), 2)
     else:
-        wordcount = len(text.split())
-        st.write("Word count:", wordcount)
+        avg_sentence_length = 0
 
-        # --- BASIC METRICS ---
-        wordcount = len(text.split())
+    if len(sentence_lengths) > 1:
+        sentence_variation = round(statistics.pstdev(sentence_lengths), 2)
+    else:
+        sentence_variation = 0
 
-        sentences = text.split(".")
-        sentence_lengths = [len(s.split()) for s in sentences if s.strip()]
+    st.write("Average sentence length:", avg_sentence_length)
+    st.write("Sentence variation:", sentence_variation)
 
     avg_sentence_length = round(sum(sentence_lengths)/len(sentence_lengths),2) if sentence_lengths else 0
     sentence_variation = round(statistics.pstdev(sentence_lengths),2) if len(sentence_lengths) > 1 else 0
