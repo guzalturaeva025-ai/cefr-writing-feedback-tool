@@ -106,6 +106,7 @@ height=320,
 )
 
 text = essay_text or ""
+
 # --- BUTTON ---
 if st.button("Generate Feedback"):
 
@@ -117,6 +118,7 @@ if st.button("Generate Feedback"):
     if not text:
         st.error("Student writing is empty.")
         st.stop()
+   
     # --- BASIC METRICS ---
     wordcount = len(text.split())
 
