@@ -104,15 +104,15 @@ height=330,
 text = text or ""
 
 # --- BUTTON ---
+text = st.text_area("Write your essay here...")
+
 if st.button("Generate Feedback"):
 
-    if not student_name.strip():
-        st.error("Student name was empty.")
-        st.stop()
-
-    if not text:
-        st.error("Student writing is empty.")
-        st.stop()
+    if text.strip() == "":
+        st.warning("Please enter your essay before generating feedback.")
+    else:
+        wordcount = len(text.split())
+        st.write("Word count:", wordcount)
 
     # --- BASIC METRICS ---
     wordcount = len(text.split())
