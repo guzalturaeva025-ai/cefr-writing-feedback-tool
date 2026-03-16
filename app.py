@@ -63,30 +63,24 @@ st.markdown("""
 <script>
 const textarea = window.parent.document.querySelector('textarea');
 
-if(textarea){
+if (textarea) {
 
-// disable autocomplete features
-textarea.setAttribute("autocomplete","off");
-textarea.setAttribute("autocorrect","off");
-textarea.setAttribute("autocapitalize","off");
-textarea.setAttribute("spellcheck","false");
+    // disable TAB suggestion acceptance
+    textarea.addEventListener("keydown", function(e){
+        if (e.key === "Tab"){
+            e.preventDefault();
+        }
+    });
 
-// disable TAB suggestion acceptance
-textarea.addEventListener("keydown", function(e){
-    if(e.key === "Tab"){
+    // disable paste
+    textarea.addEventListener("paste", function(e){
         e.preventDefault();
-    }
-});
+    });
 
-// disable paste
-textarea.addEventListener("paste", function(e){
-    e.preventDefault();
-});
-
-// disable right click
-textarea.addEventListener("contextmenu", function(e){
-    e.preventDefault();
-});
+    // disable right click
+    textarea.addEventListener("contextmenu", function(e){
+        e.preventDefault();
+    });
 
 }
 </script>
