@@ -1,4 +1,4 @@
-import streamlit as st
+import streamlit.components.v1 as components
 from groq import Groq
 import requests
 import statistics
@@ -107,11 +107,44 @@ genre = st.selectbox(
     ]
 )
 
-text = st.text_area(
-    "Student Writing",
-    height=300,
-    placeholder="Write your essay here...",
+essay_box = components.html(
+"""
+<textarea id="essay"
+autocomplete="off"
+autocorrect="off"
+autocapitalize="off"
+spellcheck="false"
+style="
+width:100%;
+height:300px;
+padding:12px;
+font-size:16px;
+border:2px solid #ddd;
+border-radius:8px;
+resize:vertical;
+font-family:Arial, sans-serif;
+"></textarea>
+
+<script>
+const textarea = document.getElementById("essay");
+
+textarea.addEventListener("input", function(){
+    window.parent.postMessage(
+        {type:"streamlit:setComponentValue", value:textarea.value},
+        "*"
+    );
+});
+
+textarea.addEventListener("keydown", function(e){
+    if(e.key === "Tab"){
+        e.preventDefault();
+    }
+});
+</script>
+""",
+height=320,
 )
+text = st.session_state.get("essay_text","")
 
 # --- BUTTON ---
 if st.button("Generate Feedback"):
