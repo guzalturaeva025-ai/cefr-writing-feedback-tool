@@ -190,7 +190,7 @@ Text:
 
     ai_detection = ai_response.choices[0].message.content
 
-    # --- SEND DATA TO GOOGLE SHEETS ---
+     # --- SEND DATA TO GOOGLE SHEETS ---
     data = {
         "name": student_name,
         "level": level,
