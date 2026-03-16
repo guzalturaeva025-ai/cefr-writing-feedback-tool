@@ -116,9 +116,8 @@ if st.button("Generate Feedback"):
         st.stop()
 
     if not text or not text.strip():
-    st.error("Student writing is empty.")
-    st.stop()
-
+        st.error("Student writing is empty.")
+        st.stop()
     # --- BASIC METRICS ---
     wordcount = len(text.split())
 
