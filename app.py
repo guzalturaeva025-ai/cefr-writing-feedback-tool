@@ -6,6 +6,17 @@ import re
 
 st.set_page_config(page_title="CEFR Writing Feedback Tool", layout="centered")
 
+st.markdown(
+    """
+    <style>
+    textarea {
+        autocomplete: off !important;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 st.title("CEFR Writing Feedback Tool")
 
 # --- API ---
@@ -49,7 +60,11 @@ genre = st.selectbox(
     ]
 )
 
-text = st.text_area("Student Writing", height=300)
+text = st.text_area(
+    "Student Writing",
+    height=300,
+    placeholder="Write your essay here...",
+)
 
 # --- BUTTON ---
 if st.button("Generate Feedback"):
