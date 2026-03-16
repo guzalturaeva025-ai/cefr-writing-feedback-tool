@@ -143,7 +143,7 @@ textarea.addEventListener("keydown", function(e){
 });
 </script>
 """, height=320)
-)
+
 text = st.session_state.get("essay_text","")
 
 # --- BUTTON ---
