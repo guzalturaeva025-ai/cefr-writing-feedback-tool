@@ -126,16 +126,18 @@ if st.button("Generate Feedback"):
 
     # --- SEND DATA TO GOOGLE SHEETS ---
     data = {
-        "name": student_name,
-        "level": level,
-        "genre": genre,
-        "wordcount": wordcount,
-        "avg_sentence_length": avg_sentence_length,
-        "sentence_variation": sentence_variation,
-        "lexical_diversity": lexical_diversity,
-        "burstiness": burstiness,
-        "repetition_rate": repetition_rate
-    }
+    "name": student_name,
+    "level": level,
+    "genre": genre,
+    "feedback": feedback,
+    "corrections": corrections,
+    "wordcount": wordcount,
+    "avg_sentence_length": avg_sentence_length,
+    "sentence_variation": sentence_variation,
+    "lexical_diversity": lexical_diversity,
+    "burstiness": burstiness,
+    "repetition_rate": repetition_rate
+}
 
     try:
         response = requests.post(url, json=data)
