@@ -116,8 +116,7 @@ genre = st.selectbox(
     ]
 )
 
-essay_box = components.html(
-"""
+essay_box = components.html("""
 <textarea id="essay"
 autocomplete="off"
 autocorrect="off"
@@ -137,21 +136,13 @@ font-family:Arial, sans-serif;
 <script>
 const textarea = document.getElementById("essay");
 
-textarea.addEventListener("input", function(){
-    window.parent.postMessage(
-        {type:"streamlit:setComponentValue", value:textarea.value},
-        "*"
-    );
-});
-
 textarea.addEventListener("keydown", function(e){
     if(e.key === "Tab"){
         e.preventDefault();
     }
 });
 </script>
-""",
-height=320,
+""", height=320)
 )
 text = st.session_state.get("essay_text","")
 
