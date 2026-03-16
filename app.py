@@ -117,16 +117,13 @@ if st.button("Generate Feedback"):
     st.write("Average sentence length:", avg_sentence_length)
     st.write("Sentence variation:", sentence_variation)
 
-    avg_sentence_length = round(sum(sentence_lengths)/len(sentence_lengths),2) if sentence_lengths else 0
-    sentence_variation = round(statistics.pstdev(sentence_lengths),2) if len(sentence_lengths) > 1 else 0
-
     unique_words = len(set(text.lower().split()))
-    lexical_diversity = round(unique_words/wordcount,2) if wordcount > 0 else 0
+    lexical_diversity = round(unique_words / wordcount, 2) if wordcount > 0 else 0
 
     # --- BURSTINESS ---
     burstiness = sentence_variation
-    repetition_ratio = 1 - lexical_diversity
-    
+    repetition_rate = 1 - lexical_diversity
+
     # --- SEND DATA TO GOOGLE SHEETS ---
     data = {
         "name": student_name,
@@ -138,17 +135,18 @@ if st.button("Generate Feedback"):
         "lexical_diversity": lexical_diversity,
         "burstiness": burstiness,
         "repetition_rate": repetition_rate
-}
+    }
 
-try:
+    try:
         response = requests.post(url, json=data)
+
         if response.status_code == 200:
             st.success("Results saved to Google Sheets")
         else:
             st.error("Google Sheets connection failed")
-except Exception as e:
-    st.error(f"Error sending data: {e}")
 
+    except Exception as e:
+        st.error(f"Error sending data: {e}")
     # --- CEFR VOCAB ANALYSIS ---
     words = re.findall(r'\b\w+\b', text.lower())
 
