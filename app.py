@@ -7,39 +7,26 @@ import re
 
 st.set_page_config(page_title="CEFR Writing Feedback Tool", layout="centered")
 
-# --- Disable autocomplete / predictions as much as possible ---
+# --- Disable browser typing helpers ---
 st.markdown("""
 <style>
-textarea {
-    autocomplete: off !important;
-    autocorrect: off !important;
-    autocapitalize: off !important;
-    spellcheck: false !important;
-}
-</style>
-""", unsafe_allow_html=True)
 
-/* Disable most browser writing helpers */
 textarea {
     autocomplete: off !important;
     autocorrect: off !important;
     autocapitalize: off !important;
     spellcheck: false !important;
-    
-    /* Force independent rendering layer */
+
     -webkit-user-modify: read-write-plaintext-only;
     text-rendering: optimizeSpeed;
 }
 
-/* Hide suggestion overlays used by some browsers */
 textarea::-webkit-contacts-auto-fill-button,
 textarea::-webkit-credentials-auto-fill-button {
     visibility: hidden;
     display: none !important;
-    pointer-events: none;
 }
 
-/* Try to suppress inline prediction UI */
 textarea::spelling-error {
     text-decoration: none;
 }
@@ -51,22 +38,6 @@ textarea::grammar-error {
 </style>
 """, unsafe_allow_html=True)
 
-# --- Extra protection using JavaScript ---
-st.markdown("""
-<script>
-const disableTypingAssist = () => {
-    const textareas = window.parent.document.querySelectorAll("textarea");
-    textareas.forEach(function(t){
-        t.setAttribute("autocomplete","off");
-        t.setAttribute("autocorrect","off");
-        t.setAttribute("autocapitalize","off");
-        t.setAttribute("spellcheck","false");
-    });
-};
-setTimeout(disableTypingAssist, 500);
-</script>
-""", unsafe_allow_html=True)
-
 st.title("CEFR Writing Feedback Tool")
 
 st.info("Please disable AI writing assistants and browser predictions before completing this task.")
@@ -75,14 +46,10 @@ st.info("Please disable AI writing assistants and browser predictions before com
 api_key = st.secrets["GROQ_API_KEY"]
 client = Groq(api_key=api_key)
 
-# --- API ---
-api_key = st.secrets["GROQ_API_KEY"]
-client = Groq(api_key=api_key)
-
 # --- GOOGLE SCRIPT URL ---
 url = "https://script.google.com/macros/s/AKfycbxi-8EH2eNX8EpLuWqzd73S0exRS9iufOnfiana4U-CeGMhA5Wcafo09reCEK4f724G/exec"
 
-# --- SIMPLE CEFR VOCAB LISTS (research demo) ---
+# --- CEFR vocabulary lists ---
 A1_words = {"go","come","make","take","see","know","think","want","like","play"}
 A2_words = {"decide","improve","travel","learn","study","teach","build"}
 B1_words = {"achieve","benefit","suggest","develop","support"}
@@ -93,47 +60,30 @@ C2_words = {"paradigm","intrinsic","nuanced"}
 # --- INPUTS ---
 student_name = st.text_input("Student Name")
 
-level = st.selectbox(
-    "CEFR Level",
-    ["A1","A2","B1","B2","C1","C2"]
-)
+level = st.selectbox("CEFR Level", ["A1","A2","B1","B2","C1","C2"])
 
 genre = st.selectbox(
     "Genre",
     [
-        "Essay",
-        "Opinion Essay",
-        "For and Against Essay",
-        "Email",
-        "Formal Letter",
-        "Informal Letter",
-        "Report",
-        "Article",
-        "Review",
-        "Narrative",
-        "Story",
-        "Blog Post"
+        "Essay","Opinion Essay","For and Against Essay","Email",
+        "Formal Letter","Informal Letter","Report","Article",
+        "Review","Narrative","Story","Blog Post"
     ]
 )
 
-essay_box = components.html("""
+# --- Custom writing box ---
+essay_text = components.html(
+"""
 <textarea id="essay"
 autocomplete="off"
 autocorrect="off"
 autocapitalize="off"
 spellcheck="false"
-style="
-width:100%;
-height:300px;
-padding:12px;
-font-size:16px;
-border:2px solid #ddd;
-border-radius:8px;
-resize:vertical;
-font-family:Arial, sans-serif;
-"></textarea>
+style="width:100%;height:300px;padding:12px;font-size:16px;border:2px solid #ddd;border-radius:8px;font-family:Arial;"
+></textarea>
 
 <script>
+
 const textarea = document.getElementById("essay");
 
 textarea.addEventListener("keydown", function(e){
@@ -141,10 +91,21 @@ textarea.addEventListener("keydown", function(e){
         e.preventDefault();
     }
 });
-</script>
-""", height=320)
 
-text = st.session_state.get("essay_text","")
+textarea.addEventListener("input", function(){
+    const value = textarea.value;
+    window.parent.postMessage(
+        {type: "streamlit:setComponentValue", value: value},
+        "*"
+    );
+});
+
+</script>
+""",
+height=320,
+)
+
+text = essay_text if essay_text else ""
 
 # --- BUTTON ---
 if st.button("Generate Feedback"):
