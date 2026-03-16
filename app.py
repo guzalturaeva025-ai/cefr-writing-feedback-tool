@@ -106,7 +106,6 @@ height=320,
 )
 
 text = essay_text or ""
-
 # --- BUTTON ---
 if st.button("Generate Feedback"):
 
