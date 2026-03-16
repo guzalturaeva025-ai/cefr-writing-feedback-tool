@@ -9,12 +9,36 @@ st.set_page_config(page_title="CEFR Writing Feedback Tool", layout="centered")
 # --- Disable autocomplete / predictions as much as possible ---
 st.markdown("""
 <style>
+
+/* Disable most browser writing helpers */
 textarea {
     autocomplete: off !important;
     autocorrect: off !important;
     autocapitalize: off !important;
     spellcheck: false !important;
+    
+    /* Force independent rendering layer */
+    -webkit-user-modify: read-write-plaintext-only;
+    text-rendering: optimizeSpeed;
 }
+
+/* Hide suggestion overlays used by some browsers */
+textarea::-webkit-contacts-auto-fill-button,
+textarea::-webkit-credentials-auto-fill-button {
+    visibility: hidden;
+    display: none !important;
+    pointer-events: none;
+}
+
+/* Try to suppress inline prediction UI */
+textarea::spelling-error {
+    text-decoration: none;
+}
+
+textarea::grammar-error {
+    text-decoration: none;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -86,7 +110,7 @@ genre = st.selectbox(
 text = st.text_area(
     "Student Writing",
     height=300,
-    placeholder="Write your essay here without AI suggestions."
+    placeholder="Write your essay here...",
 )
 
 # --- BUTTON ---
