@@ -65,15 +65,18 @@ level = st.selectbox("CEFR Level", ["A1","A2","B1","B2","C1","C2"])
 genre = st.selectbox(
     "Genre",
     [
-        "Essay","Opinion Essay","For and Against Essay","Email",
-        "Formal Letter","Informal Letter","Report","Article",
-        "Review","Narrative","Story","Blog Post"
+        "Essay", "Opinion Essay", "For and Against Essay", "Email",
+        "Formal Letter", "Informal Letter", "Report", "Article",
+        "Review", "Narrative", "Story", "Blog Post"
     ]
 )
 
-# --- Custom writing box ---
-essay_text = components.html(
-"""
+# --- Student Writing ---
+text = st.text_area(
+    "Student Writing",
+    height=300,
+    placeholder="Write your essay here..."
+)
 <textarea id="essay"
 autocomplete="off"
 autocorrect="off"
@@ -116,7 +119,7 @@ if st.button("Generate Feedback"):
         st.error("Student name was empty.")
         st.stop()
 
-    if not text:
+    if not text or not text.strip():
         st.error("Student writing is empty.")
         st.stop()
 
