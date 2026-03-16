@@ -108,12 +108,11 @@ text = text or ""
 # --- BUTTON ---
 if st.button("Generate Feedback"):
 
-    # --- VALIDATION ---
     if not student_name.strip():
         st.error("Student name was empty.")
         st.stop()
 
-    if not text.strip():
+    if not text:
         st.error("Student writing is empty.")
         st.stop()
 
