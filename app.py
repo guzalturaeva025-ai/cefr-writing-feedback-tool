@@ -10,6 +10,14 @@ st.set_page_config(page_title="CEFR Writing Feedback Tool", layout="centered")
 # --- Disable autocomplete / predictions as much as possible ---
 st.markdown("""
 <style>
+textarea {
+    autocomplete: off !important;
+    autocorrect: off !important;
+    autocapitalize: off !important;
+    spellcheck: false !important;
+}
+</style>
+""", unsafe_allow_html=True)
 
 /* Disable most browser writing helpers */
 textarea {
