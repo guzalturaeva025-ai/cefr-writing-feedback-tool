@@ -6,18 +6,41 @@ import re
 
 st.set_page_config(page_title="CEFR Writing Feedback Tool", layout="centered")
 
-st.markdown(
-    """
-    <style>
-    textarea {
-        autocomplete: off !important;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
+# --- Disable autocomplete / predictions as much as possible ---
+st.markdown("""
+<style>
+textarea {
+    autocomplete: off !important;
+    autocorrect: off !important;
+    autocapitalize: off !important;
+    spellcheck: false !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# --- Extra protection using JavaScript ---
+st.markdown("""
+<script>
+const disableTypingAssist = () => {
+    const textareas = window.parent.document.querySelectorAll("textarea");
+    textareas.forEach(function(t){
+        t.setAttribute("autocomplete","off");
+        t.setAttribute("autocorrect","off");
+        t.setAttribute("autocapitalize","off");
+        t.setAttribute("spellcheck","false");
+    });
+};
+setTimeout(disableTypingAssist, 500);
+</script>
+""", unsafe_allow_html=True)
 
 st.title("CEFR Writing Feedback Tool")
+
+st.info("Please disable AI writing assistants and browser predictions before completing this task.")
+
+# --- API ---
+api_key = st.secrets["GROQ_API_KEY"]
+client = Groq(api_key=api_key)
 
 # --- API ---
 api_key = st.secrets["GROQ_API_KEY"]
@@ -63,7 +86,7 @@ genre = st.selectbox(
 text = st.text_area(
     "Student Writing",
     height=300,
-    placeholder="Write your essay here...",
+    placeholder="Write your essay here without AI suggestions."
 )
 
 # --- BUTTON ---
