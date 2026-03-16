@@ -205,14 +205,17 @@ data = {
     "burstiness": burstiness,
     "repetition_rate": repetition_rate
 }
-    try:
-        response = requests.post(url, json=data)
-        if response.status_code == 200:
-            st.success("Results saved to Google Sheets")
-        else:
-            st.error("Google Sheets connection failed")
-    except Exception as e:
-        st.error(f"Error sending data: {e}")
+
+try:
+    response = requests.post(url, json=data)
+
+    if response.status_code == 200:
+        st.success("Results saved to Google Sheets")
+    else:
+        st.error("Google Sheets connection failed")
+
+except Exception as e:
+    st.error(f"Error sending data: {e}")
 
     # --- DISPLAY RESULTS ---
     st.subheader("Writing Statistics")
