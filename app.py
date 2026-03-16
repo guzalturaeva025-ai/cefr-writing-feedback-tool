@@ -1,3 +1,4 @@
+import streamlit as st
 import streamlit.components.v1 as components
 from groq import Groq
 import requests
