@@ -190,7 +190,7 @@ Text:
 
     ai_detection = ai_response.choices[0].message.content
 
-     # --- SEND DATA TO GOOGLE SHEETS ---
+# --- SEND DATA TO GOOGLE SHEETS ---
     data = {
         "name": student_name,
         "level": level,
@@ -201,23 +201,6 @@ Text:
         "wordcount": wordcount,
         "avg_sentence_length": avg_sentence_length,
         "sentence_variation": sentence_variation,
-        "lexical_diversity": lexical_diversity,
-        "burstiness": burstiness,
-        "repetition_rate": repetition_rate
-    }
-
-    try:
-        response = requests.post(url, json=data)
-
-        if response.status_code == 200:
-            st.success("Results saved to Google Sheets")
-        else:
-            st.error("Google Sheets connection failed")
-
-    except Exception as e:
-        st.error(f"Error sending data: {e}")
-
-  sentence_variation,
         "lexical_diversity": lexical_diversity,
         "burstiness": burstiness,
         "repetition_rate": repetition_rate
