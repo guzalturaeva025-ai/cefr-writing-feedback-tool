@@ -101,7 +101,7 @@ textarea.addEventListener("keydown", function(e){
 """,
 height=330,
 )
-text = text or ""
+text = st.text_area("Write your essay here...", height=330)
 
 # --- BUTTON ---
 if st.button("Generate Feedback"):
@@ -112,11 +112,11 @@ if st.button("Generate Feedback"):
         wordcount = len(text.split())
         st.write("Word count:", wordcount)
 
-    # --- BASIC METRICS ---
-    wordcount = len(text.split())
+        # --- BASIC METRICS ---
+        wordcount = len(text.split())
 
-    sentences = text.split(".")
-    sentence_lengths = [len(s.split()) for s in sentences if s.strip()]
+        sentences = text.split(".")
+        sentence_lengths = [len(s.split()) for s in sentences if s.strip()]
 
     avg_sentence_length = round(sum(sentence_lengths)/len(sentence_lengths),2) if sentence_lengths else 0
     sentence_variation = round(statistics.pstdev(sentence_lengths),2) if len(sentence_lengths) > 1 else 0
