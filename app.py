@@ -105,7 +105,7 @@ textarea.addEventListener("input", function(){
 height=320,
 )
 
-text = essay_text if essay_text else ""
+text = essay_text or ""
 
 # --- BUTTON ---
 if st.button("Generate Feedback"):
@@ -115,9 +115,9 @@ if st.button("Generate Feedback"):
         st.error("Student name was empty.")
         st.stop()
 
-    if not text.strip():
-        st.error("Student writing is empty.")
-        st.stop()
+    if not text or not text.strip():
+    st.error("Student writing is empty.")
+    st.stop()
 
     # --- BASIC METRICS ---
     wordcount = len(text.split())
