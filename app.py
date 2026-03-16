@@ -104,8 +104,6 @@ height=330,
 text = text or ""
 
 # --- BUTTON ---
-text = st.text_area("Write your essay here...")
-
 if st.button("Generate Feedback"):
 
     if text.strip() == "":
