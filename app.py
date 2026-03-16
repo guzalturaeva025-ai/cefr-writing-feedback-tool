@@ -20,6 +20,9 @@ textarea {
 
 st.title("CEFR Writing Feedback Tool")
 
+st.warning(
+"⚠️ Important: Please write your text independently. AI writing assistants, autocomplete suggestions, and pasted text may be detected by the system."
+)
 # --- API ---
 api_key = st.secrets["GROQ_API_KEY"]
 client = Groq(api_key=api_key)
