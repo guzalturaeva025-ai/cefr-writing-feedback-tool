@@ -55,11 +55,55 @@ genre = st.selectbox(
 )
 
 # --- Student Writing ---
-text = st.text_area(
-    "Student Writing",
-    height=300,
-    placeholder="Write your essay here..."
+import streamlit.components.v1 as components
+
+text = components.html(
+"""
+<textarea id="essay"
+placeholder="Write your essay here..."
+autocomplete="off"
+autocorrect="off"
+autocapitalize="off"
+spellcheck="false"
+style="
+width:100%;
+height:300px;
+padding:12px;
+font-size:16px;
+border:2px solid #ccc;
+border-radius:8px;
+resize:none;
+font-family:Arial;
+"></textarea>
+
+<script>
+
+const textarea = document.getElementById("essay");
+
+/* disable paste */
+textarea.addEventListener("paste", e => e.preventDefault());
+
+/* disable copy */
+textarea.addEventListener("copy", e => e.preventDefault());
+
+/* disable cut */
+textarea.addEventListener("cut", e => e.preventDefault());
+
+/* disable right click */
+textarea.addEventListener("contextmenu", e => e.preventDefault());
+
+/* disable tab suggestion acceptance */
+textarea.addEventListener("keydown", function(e){
+    if(e.key === "Tab"){
+        e.preventDefault();
+    }
+});
+
+</script>
+""",
+height=330,
 )
+text = text or ""
 
 # --- BUTTON ---
 if st.button("Generate Feedback"):
