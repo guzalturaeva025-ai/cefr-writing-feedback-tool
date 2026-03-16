@@ -110,14 +110,14 @@ text = essay_text or ""
 # --- BUTTON ---
 if st.button("Generate Feedback"):
 
-    # --- VALIDATION ---
-    if not student_name.strip():
-        st.error("Student name was empty.")
-        st.stop()
+   # --- VALIDATION ---
+if not student_name.strip():
+    st.error("Student name was empty.")
+    st.stop()
 
-    if not text or not text.strip():
-        st.error("Student writing is empty.")
-        st.stop()
+if not text or not text.strip():
+    st.error("Student writing is empty.")
+    st.stop()
     # --- BASIC METRICS ---
     wordcount = len(text.split())
 
