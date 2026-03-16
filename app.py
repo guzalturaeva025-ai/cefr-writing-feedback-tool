@@ -120,35 +120,9 @@ if st.button("Generate Feedback"):
     unique_words = len(set(text.lower().split()))
     lexical_diversity = round(unique_words / wordcount, 2) if wordcount > 0 else 0
 
-    # --- BURSTINESS ---
     burstiness = sentence_variation
     repetition_rate = 1 - lexical_diversity
 
-    # --- SEND DATA TO GOOGLE SHEETS ---
-    data = {
-    "name": student_name,
-    "level": level,
-    "genre": genre,
-    "feedback": feedback,
-    "corrections": corrections,
-    "wordcount": wordcount,
-    "avg_sentence_length": avg_sentence_length,
-    "sentence_variation": sentence_variation,
-    "lexical_diversity": lexical_diversity,
-    "burstiness": burstiness,
-    "repetition_rate": repetition_rate
-}
-
-    try:
-        response = requests.post(url, json=data)
-
-        if response.status_code == 200:
-            st.success("Results saved to Google Sheets")
-        else:
-            st.error("Google Sheets connection failed")
-
-    except Exception as e:
-        st.error(f"Error sending data: {e}")
     # --- CEFR VOCAB ANALYSIS ---
     words = re.findall(r'\b\w+\b', text.lower())
 
@@ -165,30 +139,12 @@ You are a CEFR writing examiner.
 
 Evaluate the student's writing at {level} level for a {genre}.
 
-IMPORTANT RULES:
-- Do NOT rewrite the student's essay
-- Do NOT continue the essay
-- Do NOT correct line by line
-- Only evaluate and give feedback
-
-Provide:
-
-1. Band score (1–4) for:
-Task Achievement
-Coherence & Organization
-Vocabulary Range
-Grammatical Range & Accuracy
-Communicative Effectiveness
-
-2. Brief explanation for each score.
-
-3. General improvement suggestions.
+Provide band scores and suggestions.
 
 Student Text:
 {text}
 """
 
-    # --- GENERATE FEEDBACK ---
     response = client.chat.completions.create(
         model="llama-3.1-8b-instant",
         messages=[{"role":"user","content":prompt}],
@@ -206,9 +162,6 @@ Mark mistakes directly in the text.
 Format:
 [word → correction]
 
-Example:
-I go [→ went] to school yesterday.
-
 Text:
 {text}
 """
@@ -219,18 +172,11 @@ Text:
         temperature=0.2,
     )
 
-    error_feedback = error_response.choices[0].message.content
+    corrections = error_response.choices[0].message.content
 
     # --- AI DETECTION PROMPT ---
     ai_prompt = f"""
-You are an academic writing analyst.
-
-Estimate the likelihood that the text was written by AI.
-
-Provide:
-1. AI likelihood score (0–100%)
-2. Indicators supporting the judgement
-3. Writing characteristics noticed
+Estimate likelihood that the text was written by AI.
 
 Text:
 {text}
@@ -243,6 +189,30 @@ Text:
     )
 
     ai_detection = ai_response.choices[0].message.content
+
+    # --- SEND DATA TO GOOGLE SHEETS ---
+    data = {
+        "name": student_name,
+        "level": level,
+        "genre": genre,
+        "feedback": feedback,
+        "corrections": corrections,
+        "wordcount": wordcount,
+        "avg_sentence_length": avg_sentence_length,
+        "sentence_variation": sentence_variation,
+        "lexical_diversity": lexical_diversity,
+        "burstiness": burstiness,
+        "repetition_rate": repetition_rate
+    }
+
+    try:
+        response = requests.post(url, json=data)
+        if response.status_code == 200:
+            st.success("Results saved to Google Sheets")
+        else:
+            st.error("Google Sheets connection failed")
+    except Exception as e:
+        st.error(f"Error sending data: {e}")
 
     # --- DISPLAY RESULTS ---
     st.subheader("Writing Statistics")
@@ -263,7 +233,7 @@ Text:
     st.markdown(feedback)
 
     st.subheader("Annotated Essay")
-    st.markdown(error_feedback)
+    st.markdown(corrections)
 
     st.subheader("AI Writing Likelihood")
     st.markdown(ai_detection)
