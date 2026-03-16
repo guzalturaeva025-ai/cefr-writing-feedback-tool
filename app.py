@@ -105,12 +105,13 @@ textarea.addEventListener("input", function(){
 height=320,
 )
 
+essay_text = components.html(...)
+
 text = essay_text or ""
 
 # --- BUTTON ---
 if st.button("Generate Feedback"):
 
-    # --- VALIDATION ---
     if not student_name or not student_name.strip():
         st.error("Student name was empty.")
         st.stop()
@@ -118,9 +119,8 @@ if st.button("Generate Feedback"):
     if not text:
         st.error("Student writing is empty.")
         st.stop()
-   
-    # --- BASIC METRICS ---
-    wordcount = len(text.split())
+
+    wordcount = len(text.split()) if text else 0
 
     sentences = text.split(".")
     sentence_lengths = [len(s.split()) for s in sentences if s.strip()]
