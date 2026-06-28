@@ -26,7 +26,30 @@ st.warning(
 # --- API ---
 api_key = st.secrets["GROQ_API_KEY"]
 client = Groq(api_key=api_key)
+# ---------- SAFE GROQ MODEL ----------
+def generate_completion(messages, temperature=0.3):
 
+    models = [
+        "openai/gpt-oss-120b",
+        "openai/gpt-oss-20b",
+        "llama-3.3-70b-versatile",
+        "llama-3.1-70b-versatile",
+    ]
+
+    last_error = None
+
+    for model in models:
+        try:
+            return client.chat.completions.create(
+                model=model,
+                messages=messages,
+                temperature=temperature,
+            )
+
+        except Exception as e:
+            last_error = e
+
+    raise last_error
 # --- GOOGLE SCRIPT URL ---
 url = "https://script.google.com/macros/s/AKfycbxi-8EH2eNX8EpLuWqzd73S0exRS9iufOnfiana4U-CeGMhA5Wcafo09reCEK4f724G/exec"
 
@@ -145,13 +168,20 @@ Student Text:
 {text}
 """
 
-    response = client.chat.completions.create(
-        model="gpt-oss-120b",
-        messages=[{"role":"user","content":prompt}],
+try:
+
+    response = generate_completion(
+        messages=[
+            {"role":"user","content":prompt}
+        ],
         temperature=0.7,
     )
 
     feedback = response.choices[0].message.content
+
+except Exception as e:
+    st.error(f"Groq Error:\n\n{e}")
+    st.stop()
 
     # --- ERROR CORRECTION PROMPT ---
     error_prompt = f"""
@@ -166,14 +196,20 @@ Text:
 {text}
 """
 
-    error_response = client.chat.completions.create(
-        model="gpt-oss-120b",
-        messages=[{"role":"user","content":error_prompt}],
+try:
+
+    error_response = generate_completion(
+        messages=[
+            {"role":"user","content":error_prompt}
+        ],
         temperature=0.2,
     )
 
     corrections = error_response.choices[0].message.content
 
+except Exception as e:
+    st.error(f"Groq Error:\n\n{e}")
+    st.stop()
     # --- AI DETECTION PROMPT ---
     ai_prompt = f"""
 Estimate likelihood that the text was written by AI.
@@ -182,14 +218,20 @@ Text:
 {text}
 """
 
-    ai_response = client.chat.completions.create(
-        model="gpt-oss-120b",
-        messages=[{"role":"user","content":ai_prompt}],
+try:
+
+    ai_response = generate_completion(
+        messages=[
+            {"role":"user","content":ai_prompt}
+        ],
         temperature=0.2,
     )
 
     ai_detection = ai_response.choices[0].message.content
 
+except Exception as e:
+    st.error(f"Groq Error:\n\n{e}")
+    st.stop()
 # --- SEND DATA TO GOOGLE SHEETS ---
     data = {
         "name": student_name,
