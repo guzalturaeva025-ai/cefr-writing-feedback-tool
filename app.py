@@ -21,14 +21,15 @@ textarea {
 st.title("CEFR Writing Feedback Tool")
 
 st.warning(
-"⚠️ Important: Please write your text independently. AI writing assistants, autocomplete suggestions, and pasted text may be detected by the system."
+    "⚠️ Important: Please write your text independently. AI writing assistants, autocomplete suggestions, and pasted text may be detected by the system."
 )
-# --- API ---
+
+# ---------- API ----------
 api_key = st.secrets["GROQ_API_KEY"]
 client = Groq(api_key=api_key)
+
 # ---------- SAFE GROQ MODEL ----------
 def generate_completion(messages, temperature=0.3):
-
     models = [
         "openai/gpt-oss-120b",
         "openai/gpt-oss-20b",
@@ -40,20 +41,22 @@ def generate_completion(messages, temperature=0.3):
 
     for model in models:
         try:
-            return client.chat.completions.create(
+            response = client.chat.completions.create(
                 model=model,
                 messages=messages,
                 temperature=temperature,
             )
+            return response
 
         except Exception as e:
             last_error = e
 
     raise last_error
-# --- GOOGLE SCRIPT URL ---
+
+# ---------- GOOGLE SCRIPT ----------
 url = "https://script.google.com/macros/s/AKfycbxi-8EH2eNX8EpLuWqzd73S0exRS9iufOnfiana4U-CeGMhA5Wcafo09reCEK4f724G/exec"
 
-# --- CEFR vocabulary lists ---
+# ---------- CEFR VOCABULARY ----------
 A1_words = {"go","come","make","take","see","know","think","want","like","play"}
 A2_words = {"decide","improve","travel","learn","study","teach","build"}
 B1_words = {"achieve","benefit","suggest","develop","support"}
@@ -61,7 +64,7 @@ B2_words = {"significant","impact","approach","complex","maintain"}
 C1_words = {"comprehensive","substantial","evaluate","interpret"}
 C2_words = {"paradigm","intrinsic","nuanced"}
 
-# --- INPUTS ---
+# ---------- INPUTS ----------
 student_name = st.text_input("Student Name")
 
 level = st.selectbox(
@@ -78,7 +81,7 @@ genre = st.selectbox(
     ]
 )
 
-# --- Student Writing ---
+# ---------- STUDENT WRITING ----------
 text = st.text_area(
     "Write your essay here...",
     height=330,
@@ -91,19 +94,16 @@ const textarea = window.parent.document.querySelector('textarea');
 
 if (textarea) {
 
-    // disable TAB suggestion acceptance
     textarea.addEventListener("keydown", function(e){
         if (e.key === "Tab"){
             e.preventDefault();
         }
     });
 
-    // disable paste
     textarea.addEventListener("paste", function(e){
         e.preventDefault();
     });
 
-    // disable right click
     textarea.addEventListener("contextmenu", function(e){
         e.preventDefault();
     });
@@ -162,28 +162,38 @@ You are a CEFR writing examiner.
 
 Evaluate the student's writing at {level} level for a {genre}.
 
-Provide band scores and suggestions.
+Provide:
+
+1. Scores for:
+- Task Achievement
+- Coherence & Organization
+- Vocabulary Range & Control
+- Grammatical Range & Accuracy
+- Communicative Effectiveness
+
+2. Short explanation for each score.
+
+3. Suggestions for improvement.
 
 Student Text:
 {text}
 """
 
-try:
+    try:
+        response = generate_completion(
+            messages=[
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.7,
+        )
 
-    response = generate_completion(
-        messages=[
-            {"role":"user","content":prompt}
-        ],
-        temperature=0.7,
-    )
+        feedback = response.choices[0].message.content
 
-    feedback = response.choices[0].message.content
+    except Exception as e:
+        st.error(f"Groq Error:\n\n{e}")
+        st.stop()
 
-except Exception as e:
-    st.error(f"Groq Error:\n\n{e}")
-    st.stop()
-
-    # --- ERROR CORRECTION PROMPT ---
+   # --- ERROR CORRECTION PROMPT ---
     error_prompt = f"""
 You are an English teacher.
 
@@ -196,6 +206,31 @@ Text:
 {text}
 """
 
+    try:
+        error_response = generate_completion(
+            messages=[
+                {"role": "user", "content": error_prompt}
+            ],
+            temperature=0.2,
+        )
+
+        corrections = error_response.choices[0].message.content
+
+    except Exception as e:
+        st.error(f"Groq Error:\n\n{e}")
+        st.stop()
+
+    # --- AI DETECTION PROMPT ---
+    ai_prompt = f"""
+Estimate the likelihood that the following text was written by AI.
+
+Provide:
+- Estimated percentage
+- Short explanation
+
+Text:
+{text}
+"""
 try:
 
     error_response = generate_completion(
@@ -218,21 +253,33 @@ Text:
 {text}
 """
 
-try:
+# --- AI DETECTION PROMPT ---
+    ai_prompt = f"""
+Estimate the likelihood that the following text was written by AI.
 
-    ai_response = generate_completion(
-        messages=[
-            {"role":"user","content":ai_prompt}
-        ],
-        temperature=0.2,
-    )
+Provide:
+- Estimated percentage
+- Short explanation
 
-    ai_detection = ai_response.choices[0].message.content
+Text:
+{text}
+"""
 
-except Exception as e:
-    st.error(f"Groq Error:\n\n{e}")
-    st.stop()
-# --- SEND DATA TO GOOGLE SHEETS ---
+    try:
+        ai_response = generate_completion(
+            messages=[
+                {"role": "user", "content": ai_prompt}
+            ],
+            temperature=0.2,
+        )
+
+        ai_detection = ai_response.choices[0].message.content
+
+    except Exception as e:
+        st.error(f"Groq Error:\n\n{e}")
+        st.stop()
+
+    # --- SEND DATA TO GOOGLE SHEETS ---
     data = {
         "name": student_name,
         "level": level,
@@ -282,3 +329,4 @@ except Exception as e:
 
     st.subheader("AI Writing Likelihood")
     st.markdown(ai_detection)
+    
