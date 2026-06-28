@@ -167,7 +167,7 @@ Text:
 """
 
     error_response = client.chat.completions.create(
-        model="llama-3.1-8b-instant",
+        model="gpt--0ss-120b",
         messages=[{"role":"user","content":error_prompt}],
         temperature=0.2,
     )
