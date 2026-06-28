@@ -193,7 +193,7 @@ Student Text:
         st.error(f"Groq Error:\n\n{e}")
         st.stop()
 
-   # --- ERROR CORRECTION PROMPT ---
+    # --- ERROR CORRECTION PROMPT ---
     error_prompt = f"""
 You are an English teacher.
 
@@ -231,40 +231,6 @@ Provide:
 Text:
 {text}
 """
-try:
-
-    error_response = generate_completion(
-        messages=[
-            {"role":"user","content":error_prompt}
-        ],
-        temperature=0.2,
-    )
-
-    corrections = error_response.choices[0].message.content
-
-except Exception as e:
-    st.error(f"Groq Error:\n\n{e}")
-    st.stop()
-    # --- AI DETECTION PROMPT ---
-    ai_prompt = f"""
-Estimate likelihood that the text was written by AI.
-
-Text:
-{text}
-"""
-
-# --- AI DETECTION PROMPT ---
-    ai_prompt = f"""
-Estimate the likelihood that the following text was written by AI.
-
-Provide:
-- Estimated percentage
-- Short explanation
-
-Text:
-{text}
-"""
-
     try:
         ai_response = generate_completion(
             messages=[
@@ -278,7 +244,6 @@ Text:
     except Exception as e:
         st.error(f"Groq Error:\n\n{e}")
         st.stop()
-
     # --- SEND DATA TO GOOGLE SHEETS ---
     data = {
         "name": student_name,
